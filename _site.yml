@@ -1,1 +1,9 @@
-
+name: "Leona's PM566 website"
+navbar:
+  title: "My Website"
+  left:
+    - text: "Leona's Home"
+      href: index.html
+output:
+  html_document:
+    theme: paper
