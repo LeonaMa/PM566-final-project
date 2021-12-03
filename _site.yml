@@ -1,9 +1,9 @@
-name: "Leona's PM566 website"
+name: "Trends in the number of smokers in the United States from 1995 to 2011"
 output_dir: "."
 navbar:
-  title: "My Website"
+  title: "PM566 Final Project"
   left:
-    - text: "Leona's Home"
+    - text: "Leona's final project"
       href: index.html
 output:
   html_document:
