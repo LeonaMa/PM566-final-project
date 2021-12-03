@@ -1,5 +1,5 @@
 ---
-title: "PM566 Final Project"
+title: "PM566 Final Project-Trends in the number of smokers in the United States from 1995 to 2011"
 author: "Leona Ma"
 output: 
     html_document:
@@ -16,6 +16,7 @@ library(tidyverse)
 library(dplyr)
 library(ggplot2)
 library(leaflet)
+library(plotly)
 ```
 
 # Introduction:
@@ -26,34 +27,26 @@ library(leaflet)
 # Methods: 
  I acquired the smoking data for 1996-2010 and 2011 separately from US Center for Disease Control and Prevention. I also extact the longitude and latitude data from the variable Location1 and merge it with data from 2011 to see how the smoking status in each state of US in 2011. Since there are four levels of smoking status (Smoke everyday, Smoke some days, Former smoker, Never smoked), I also create two variables to combine the first two variables and last two variables to see the the proportion of smokers and nonsmokers overall. Then, I split the dataset into two that has state data and nationwide data respectively. After all this data processing, I create several scatter plot to the the trend of tobacco use from 1995 to 2011. 
  
-# Part 1 Data Cleaning and Wrangling
-
-## Step1 reading and combining the data sets
-```{r reading and combining}
+```{r reading and combining, echo=FALSE}
 tobacco10 <- data.table::fread("tobacco2010.csv")
 tobacco11 <- data.table::fread("tobacco2011.csv")
 location <- data.table::fread("location.csv")
 tobacco <- rbind(tobacco10, tobacco11)
 tobacco11_L <- merge(tobacco11, location, by = "State")
 ```
-Tobacco11_L missed two observations including nationwide data. But it's fine, we don't want nationwide data in map. 
 
-## Step2 creating two new variables "smokers and nonsmokers"
-```{r creating}
+```{r creating, echo=FALSE}
 tobacco[, smokers := `Smoke everyday`+`Smoke some days`]
 tobacco[, nonsmokers := `Former smoker`+`Never smoked`]
 ```
 
-## Step3 Spliting the data sets
-```{r spliting}
+```{r spliting, echo=FALSE}
 nation <- tobacco[State == "Nationwide (States and DC)" | State == "Nationwide (States, DC, and Territories)"]
 area <- tobacco[!State == "Nationwide (States, DC, and Territories)" & !State == "Nationwide (States and DC)"]
 ```
 
 
-# Part 2 Looking at the Data
-
-```{r results='hide'}
+```{r results='hide', echo=FALSE}
 dim(tobacco)
 head(tobacco)
 tail(tobacco)
@@ -64,15 +57,15 @@ summary(tobacco$`Former smoker`)
 summary(tobacco$`Never smoked`)
 ```
 
-# Part 3 Preliminary Results 
+# Preliminary Results 
 
-## Step 1 Taking a look at the top5 proportions of smokers and nonsmokers. 
-```{r}
+## Taking a look at the top5 proportions of smokers and nonsmokers. 
+```{r, echo=FALSE}
 top5_smoke <- tobacco[order(`smokers`,decreasing = TRUE)][1:5]
 tab <- top5_smoke[, .(Year = Year, State = State, `proportions of smokers` = smokers)]
 knitr::kable(tab)
 ```
-```{r}
+```{r, echo=FALSE}
 top5_nonsmoke <- tobacco[order(`nonsmokers`,decreasing = TRUE)][1:5]
 tab <- top5_nonsmoke[, .(Year = Year, State = State, `proportions of nonsmokers` = nonsmokers)]
 knitr::kable(tab)
@@ -80,9 +73,9 @@ knitr::kable(tab)
 
 From these two table, we can see that the 5 highest proportions of smokers are concentrated on 1996-2003 period, and the 5 highest proportions of nonsmokers are concentrated on 2005-2010. They show a basic trend that proportion of smokers were decreasing. However, further data exploration is still needed to make conclusion.
 
-## Step 2 Looing at smokers and nonsmokers overall in nationwide and statewide respectively
+## Looing at smokers and nonsmokers overall in nationwide and statewide respectively
 ### Smokers nationwide:
-```{r}
+```{r, echo=FALSE}
 ggplot(data = nation, mapping =aes(x = Year, y=smokers, color = State)) +
   geom_point() +
   geom_smooth(method=lm,se=FALSE, fullrange=TRUE) +
@@ -94,7 +87,7 @@ From this plot we can see that adding data from territories didn't change the tr
 
 
 ### Smokers in statewide
-```{r}
+```{r, echo=FALSE}
 ggplot(data=area, mapping=aes(x = Year, y = smokers)) +
   geom_point() + 
   facet_wrap(~State) +
@@ -105,7 +98,7 @@ ggplot(data=area, mapping=aes(x = Year, y = smokers)) +
 From these plots,even thought they are pretty small, we can still see that most of them have the decreasing trend of smoker proportions, and the the last point is higher than the regression line. The small fluctuation can be found in some of the area, such as South Dakota and Nevada. Thus, the result from statewide is corresponding to that of nationwide. Since all the plots has the same y-scale, we can state that the overall proportion of smokers is the highest in Kentucky, and it is relatively low in Utah and Virgin Islands. 
 
 ### Nonsmokers nationwide:
-```{r}
+```{r, echo=FALSE}
 ggplot(data = nation, mapping =aes(x = Year, y=nonsmokers, color = State)) +
   geom_point() +
   xlab("Years") + ylab("percentage") + 
@@ -115,21 +108,22 @@ ggplot(data = nation, mapping =aes(x = Year, y=nonsmokers, color = State)) +
 ```
 
 ### Nonmokers in statewide
-```{r}
-ggplot(data=area, mapping=aes(x = Year, y = nonsmokers)) +
+```{r, echo=FALSE}
+p<-ggplot(data=area, mapping=aes(x = Year, y = nonsmokers)) +
   geom_point() + 
   facet_wrap(~State) +
   geom_smooth(method='lm', formula = y~x)+
   labs(title = "scatterplots of nonsmokers vs Year by State", x="Years", y="Percentage of people who are nonsmokers")
+ggplotly(p)
 ```
 
 The result from proportions of nonsmokers are exactly opposite of that of the smokers. We can clearly see a increasing trend in nationwide plot.There is a small fluctuation between 2000-2003 and a relatively large decrease from 2010 to 2011. From the statewide plots, we can see that most of them have the increasing trend of nonsmoker proportions, and the the last point is lower than the regression line. The small fluctuation can be found in some of the area, such as South Dakota and Nevada. we also can state that the overall proportion of nonsmokers is the lowest in Kentucky, and it is relatively high in Utah and Virgin Islands. 
 
-## Step 3 Looing at 4-level of tobacoo use in nationwide and statewide respectively
+## Looing at 4-level of tobacoo use in nationwide and statewide respectively
 
 
 ### Smoke everyday in nationwide
-```{r}
+```{r, echo=FALSE}
 ggplot(data = nation, mapping =aes(x = Year, y=`Smoke everyday`, color = State)) +
   geom_point() +
   geom_smooth(method=lm,se=FALSE, fullrange=TRUE) +
@@ -139,7 +133,7 @@ ggplot(data = nation, mapping =aes(x = Year, y=`Smoke everyday`, color = State))
 
 
 ### Smoke everyday in statewide
-```{r}
+```{r, echo=FALSE}
 ggplot(data=area, mapping=aes(x = Year, y = `Smoke everyday`)) +
   geom_point() + 
   facet_wrap(~State) +
@@ -150,7 +144,7 @@ ggplot(data=area, mapping=aes(x = Year, y = `Smoke everyday`)) +
 For proportions of people who smoke everyday, we can see that it is pretty similar with smokers overall, which has a clearly decreasing trend, little fluctuation and large increase in 2011. The difference is that the little fluctuation begins at 2002. 
 
 ### Smoke some days in nationwide
-```{r}
+```{r, echo=FALSE}
 ggplot(data = nation, mapping =aes(x = Year, y=`Smoke some days`, color = State)) +
   geom_point() + 
   geom_smooth(method=lm,se=FALSE, fullrange=TRUE) +
@@ -158,9 +152,21 @@ ggplot(data = nation, mapping =aes(x = Year, y=`Smoke some days`, color = State)
   labs(title = "scatterplots of people who smoke some day vs Year in nationwide", x="Years", y="Percentage of people who smoke some day")
 ```
 
+```{r, echo=FALSE}
+nation %>% 
+  plot_ly(x = ~Year, y = ~`Smoke some days`, 
+          type = 'scatter', mode = 'markers', color = ~State,
+          marker = list(sizemode='diameter', opacity=2)
+          ) %>% 
+  layout(title = "scatterplots of people who smoke some day vs Year in nationwide",
+                  yaxis = list(title = "Percentage of people who smoke some day"), 
+                  xaxis = list(title = "Years"))
+
+```
+
 
 ### Smoke some days in statewide
-```{r}
+```{r, echo=FALSE}
 ggplot(data=area, mapping=aes(x = Year, y = `Smoke some days`)) +
   geom_point() + 
   facet_wrap(~State) +
@@ -171,7 +177,7 @@ ggplot(data=area, mapping=aes(x = Year, y = `Smoke some days`)) +
 From the first nationwide plot, we can see that proportions of prople who smoke some day increased steadily from 1995 to 2001, and decreased in 2002, which corresponding to the decreasing of people who smoke everyday. We can make a reasonable inference that from 1995 to 2001, there were certain amount of people who reduced their smoking frequency, but part of them didn't stick to it, and smoked everyday again in 2002. Even though, from 2004 to 2010 there is a steady decrease, it went back agian in 2011. The statewide plots show a overall inceasing trend. 
 
 ### Former smoker in nationwide
-```{r}
+```{r, echo=FALSE}
 ggplot(data = nation, mapping =aes(x = Year, y=`Former smoker`, color = State)) +
   geom_point() +
   geom_smooth(method=lm,se=FALSE, fullrange=TRUE) +
@@ -181,7 +187,7 @@ ggplot(data = nation, mapping =aes(x = Year, y=`Former smoker`, color = State)) 
 
 
 ### Former smoker in statewide
-```{r}
+```{r, echo=FALSE}
 ggplot(data=area, mapping=aes(x = Year, y = `Former smoker`)) +
   geom_point() + 
   facet_wrap(~State) +
@@ -192,7 +198,7 @@ ggplot(data=area, mapping=aes(x = Year, y = `Former smoker`)) +
 From the plot of proportions of people who are former smokers, we can see the overall trend is increasing, but it fluctuates a lot. The trend is different across each state. My inference is that there had been people try to quit smoking, but it is hard to insist. 
 
 ### Never smoked in nationwide
-```{r}
+```{r, echo=FALSE}
 ggplot(data = nation, mapping =aes(x = Year, y=`Never smoked`, color = State)) +
   geom_point() +
   geom_smooth(method=lm,se=FALSE, fullrange=TRUE) +
@@ -201,7 +207,7 @@ ggplot(data = nation, mapping =aes(x = Year, y=`Never smoked`, color = State)) +
 ```
 
 ### Never smoked in statewide
-```{r}
+```{r, echo=FALSE}
 ggplot(data=area, mapping=aes(x = Year, y = `Never smoked`)) +
   geom_point() + 
   facet_wrap(~State) +
@@ -211,8 +217,8 @@ ggplot(data=area, mapping=aes(x = Year, y = `Never smoked`)) +
 
 From the first plot of proportions of people who never smoked, we can clearly see that there is a increasing trend in the whole time period. The fluctuation between 2000 and 2003, and the large increase in 2011 are corresponding to the overall smokers and nonsmokers situation. Conditions are pretty different among each state. Most of the states have a overall increase trend or relatively steady, but some states like Oklahoma has a decreasing trend. 
 
-## Step 4 See percentage of people who smoke everyday over the country in most recent year, 2011
-```{r} 
+## See percentage of people who smoke everyday over the country in most recent year, 2011
+```{r, echo=FALSE} 
 tem.pal <- colorNumeric(c('green','yellow','red'), domain=tobacco11_L$`Smoke everyday`)
 leaflet(tobacco11_L) %>% 
   addTiles() %>%
