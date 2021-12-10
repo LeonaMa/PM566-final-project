@@ -25,13 +25,16 @@ library(plotly)
 ```
 
 # Introduction:
+
  Smoking can increase the risk of many diseases, such as heart disease, stroke, and lung cancer. It is one of the most important risk factors of lung cancer. Tons of efforts have been done to prevent people from smoking. This data shows that how the proportion of four-level of smoking prevalence changed in adult over 1995-2011 in US. 
  
 # Question:
+
  Was the proportion of American adults smoke decreasing during 1995-2011?
  
 # Methods: 
- I acquired the smoking data for 1996-2010 and 2011 separately from US Center for Disease Control and Prevention. I also extract the longitude and latitude data from the variable Location1(state longitude latitude) in the original data (data:location) and merge it with data from 2011 to see how the smoking status in each state of US in 2011. Since there are four levels of smoking status (Smoke everyday, Smoke some days, Former smoker, Never smoked), I also create two variables to combine the first two variables and last two variables to see the the proportion of smokers and nonsmokers overall. Then, I split the dataset into two that has state data and nationwide data respectively. After all this data processing, I create several scatter plot to the the trend of tobacco use from 1995 to 2011 using ggplot and ggplotly. 
+
+ I acquired the smoking data for 1996-2010 and 2011 separately from US Center for Disease Control and Prevention. I also extracted the longitude and latitude data from the variable Location1(state longitude latitude) in the original data (data:location) and merge it with data from 2011 to see how the smoking status in each state of US in 2011. Since there are four levels of smoking status (Smoke everyday, Smoke some days, Former smoker, Never smoked), I also create two variables to combine the first two variables and last two variables to see the the proportion of smokers and nonsmokers overall. Then, I split the dataset into two that has state data (area) and nationwide (nation) data respectively. After all this data processing, I create several scatter plot to the the trend of tobacco use from 1995 to 2011 using ggplot and ggplotly. 
  
 ```{r reading and combining, echo=FALSE}
 tobacco10 <- data.table::fread("tobacco2010.csv")
@@ -41,14 +44,17 @@ tobacco <- rbind(tobacco10, tobacco11)
 tobacco11_L <- merge(tobacco11, location, by = "State")
 ```
 
-```{r creating, echo=FALSE}
+```{r}
 tobacco[, smokers := `Smoke everyday`+`Smoke some days`]
 tobacco[, nonsmokers := `Former smoker`+`Never smoked`]
 ```
 
+
 ```{r spliting, echo=FALSE}
-nation <- tobacco[State == "Nationwide (States and DC)" | State == "Nationwide (States, DC, and Territories)"]
-area <- tobacco[!State == "Nationwide (States, DC, and Territories)" & !State == "Nationwide (States and DC)"]
+nation <- tobacco[State == "Nationwide (States and DC)" | State == "Nationwide (States, DC, and Territories)", ]
+area <- tobacco[!State == "Nationwide (States, DC, and Territories)" & !State == "Nationwide (States and DC)", ]
+
+nation <- data_frame(tobacco[State == "Nationwide (States and DC)" | State == "Nationwide (States, DC, and Territories)", ])
 ```
 
 
