@@ -12,7 +12,7 @@ output:
 
 This is my PM566 Final Project website.
 
-Link to [**download the report**](https://raw.githubusercontent.com/LeonaMa/PM566-final-project-Trends-in-the-number-of-smokers-in-the-United-States-from-1995-to-2011/master/report.pdf)
+Link to [**download the report**](https://raw.githubusercontent.com/LeonaMa/PM566-final-project-Trends-in-the-number-of-smokers-in-the-United-States-from-1995-to-2011/master/PM566-final-project-report.pdf)
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
